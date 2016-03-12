@@ -15,6 +15,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('cube', function () {
+    return view('cube');
+});
+
+Route::post('/submit','cubeController@sumar');
 
 
 
