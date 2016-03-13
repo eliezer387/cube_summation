@@ -19,7 +19,7 @@ Route::get('cube', function () {
     return view('cube');
 });
 
-Route::post('/submit','cubeController@sumar');
+Route::post('/submit','cubeController@main');
 
 
 
