@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests;
+use Illuminate\Support\Facades\View;
 
 class cubeController extends Controller
 {
@@ -26,10 +27,10 @@ class cubeController extends Controller
     {
         $operaciones = $request->input('ope');
         $array_operations = $this->split_string($operaciones);
-
         $test_cases = $this->get_test_case($array_operations);
-        $cube = $this->initialize_cube(4);
-        dd($test_cases);
+        $result = $this->process_test_cases($test_cases);
+//        View::make('show_results', array('results'=>$result));
+        return view('show_results',['results'=>$result]);
     }
 
     /**
@@ -53,10 +54,8 @@ class cubeController extends Controller
         $elem = explode(" ", $params[1]);
         $N = $elem[0];
         $M = $elem[1];
-
         $test_cases = array();
         $fin = count($params);
-
         $o = 0;
         $i = 0;
         while ($i < $fin)
@@ -68,7 +67,6 @@ class cubeController extends Controller
             }
             $i++;
         }
-
 
         return $test_cases;
 
@@ -90,13 +88,13 @@ class cubeController extends Controller
     public function sum($i, $j, $k, $i1, $j1, $k1, $cube)
     {
         $cube_sum = 0;
-        for ($i = 0; $i <= $i1; $i++)
+        for ($x = $i; $x <= $i1; $x++)
         {
-            for ($j = 0; $j <= $j1; $j++)
+            for ($y = $j; $y <= $j1; $y++)
             {
-                for ($k = 0; $k <= $k1; $k++)
+                for ($z = $k; $z <= $k1; $z++)
                 {
-                    $cube_sum = $cube_sum + $cube[$i][$j][$k];
+                    $cube_sum = $cube_sum + $cube[$x][$y][$z];
                 }
             }
         }
@@ -114,18 +112,69 @@ class cubeController extends Controller
      */
     public function update($i, $j, $k, $cube, $value)
     {
-
         $cube[$i][$j][$k] = $value;
-
         return $cube;
     }
 
+    /**
+     * funcion que recibe el arreglo de casos de prueba, ejecuta las pruebas y devuelve el texto con los resultados
+     * @param type $test
+     * @return string
+     */
     public function process_test_cases($test)
     {
-        return;
+        $T = $test[0][0];
+        unset($test[0][0]);
+        $i = 0;
+        $N = 0;
+        $cube = array();
+        $result = '';
+        $x = 0;
+        $y = 0;
+        $z = 0;
+        foreach ($test as $key => $value)
+        {
+            $cube = array();
+            foreach ($value as $k => $v)
+            {
+                $op[$i] = explode(" ", $v);
+                if (count($op[$i]) == 2)
+                {
+                    $N = $op[$i][1];
+                } elseif (strtoupper($op[$i][0]) == "UPDATE")
+                {
+                    if (empty($cube))
+                    {
+                        $cube = $this->initialize_cube($N);
+                    }
+                    $x = $op[$i][1];
+                    $y = $op[$i][2];
+                    $z = $op[$i][3];
+                    $cube = $this->update($x, $y, $z, $cube, $op[$i][4]);
+
+                } elseif (strtoupper($op[$i][0]) == "QUERY")
+                {
+                    if (empty($cube))
+                    {
+                        $cube = $this->initialize_cube($N);
+                    }
+                    $x = $op[$i][1];
+                    $y = $op[$i][2];
+                    $z = $op[$i][3];
+                    $x1 = $op[$i][4];
+                    $y1 = $op[$i][5];
+                    $z1 = $op[$i][6];
+                    $sum = $this->sum($x, $y, $z, $x1, $y1, $z1, $cube);
+                    $result.= $sum . "\r\n";
+                }
+
+                $i++;
+            }
+        }
+
+        return $result;
     }
 
-    
     /**
      * Funcion que inicializa el cubo de longitud definida por el parametro $N 
      * @param int $N
@@ -140,7 +189,7 @@ class cubeController extends Controller
             {
                 for ($k = 0; $k < $N; $k++)
                 {
-                    $cube[$i][$i][$i] = 0;
+                    $cube[$i][$j][$k] = 0;
                 }
             }
         }
