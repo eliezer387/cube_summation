@@ -29,8 +29,8 @@ class cubeController extends Controller
         $array_operations = $this->split_string($operaciones);
         $test_cases = $this->get_test_case($array_operations);
         $result = $this->process_test_cases($test_cases);
-//        View::make('show_results', array('results'=>$result));
-        return view('show_results',['results'=>$result]);
+       
+        return view('show_results',['results'=>trim($result), 'entrada'=>$operaciones]);
     }
 
     /**
@@ -40,7 +40,6 @@ class cubeController extends Controller
     public function split_string($string)
     {
         $params = explode("\r\n", trim($string));
-        //dd($params);
         return $params;
     }
 
@@ -69,8 +68,6 @@ class cubeController extends Controller
         }
 
         return $test_cases;
-
-//        dd($tmp);
     }
 
     /**
